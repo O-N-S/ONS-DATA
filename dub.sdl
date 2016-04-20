@@ -3,3 +3,4 @@ description "Template based D-library for handling bidǵ data in table structure
 copyright "Copyright © 2016, ozan"
 authors "Ozan Nurettin Süel (O-N-S)"
 targetType "library"
+license "Apache-2.0"
