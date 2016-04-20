@@ -9,6 +9,8 @@ T[] newRow(T)(size_t length) {
 	foreach(ref r; result) r = 0;
 	return result;
 }
+
+/+ +/
 T[] copy(T)(T[] row) if (isBasicType!T) {
 	T[] result;
 	result.length = row.length;
@@ -16,6 +18,7 @@ T[] copy(T)(T[] row) if (isBasicType!T) {
 	return result;
 } 
 
+/+ +/
 T[][] copy(T)(T[][] rows) if (isBasicType!T) {
 	T[][] result;
 	result.length = rows.length;
@@ -23,6 +26,7 @@ T[][] copy(T)(T[][] rows) if (isBasicType!T) {
 	return result;
 } 
 
+/+ +/
 T[string] changedCells(T)(T[] changedRow, T[] originalRow, size_t[string] colIndex) if (isBasicType!T) {
 	T[string] result;
 	if ((changedRow) && (originalRow)) { 
@@ -32,6 +36,8 @@ T[string] changedCells(T)(T[] changedRow, T[] originalRow, size_t[string] colInd
 	}
 	return result;
 }
+
+/+ +/
 T[string] changedCells(T)(T[] changedRow, T originalValue, size_t[string] colIndex) if (isBasicType!T) {
 	T[string] result;
 	if (changedRow) { 
@@ -41,10 +47,14 @@ T[string] changedCells(T)(T[] changedRow, T originalValue, size_t[string] colInd
 	}
 	return result;
 }
+
+/+ +/
 bool isIn(T)(T value, T[] values) {
 	foreach(v; values) if (v == value) return true;
 	return false;
 }
+
+/+ +/
 bool isNotIn(T)(T value, T[] values) {
 	foreach(v; values) if (v == value) return false;
 	return true;
