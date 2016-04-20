@@ -1,0 +1,5 @@
+name "ons-data"
+description "Template based D-library for handling bidǵ data in table structures"
+copyright "Copyright © 2016, ozan"
+authors "Ozan Nurettin Süel (O-N-S)"
+targetType "library"
