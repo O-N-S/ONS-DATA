@@ -3,6 +3,7 @@
 import std.stdio;
 import onsdata;
 
+/+ +/
 T[] newRow(T)(size_t length) {
 	T[] result; result.length = length;
 	foreach(ref r; result) r = 0;
