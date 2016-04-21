@@ -5,6 +5,8 @@ import std.conv;
 import std.string;
 import onsdata;
 
+import Cell = onsdata.cell;
+
 enum RowStatus {
 	invalid,
 	valid,
@@ -45,16 +47,17 @@ class Row(T) {
 		foreach(c; cols) if (result > this[c]) result = this[c];
 		return result;
 	}
-	
-	void avg(size_t target, size_t[] cols) { if (cols) this[target] = avg(cols); }
+
+	/+ avg - returns the average value of selected columns and write the result in the target col +/
+	void avg(size_t target, size_t[] cols) { this[target] = avg(cols); }
+	/+ avg - returns the average value of selected columns +/
 	T avg(size_t[] cols) {
-		if (cols.length == 0) return 0;
-		
-		T result = 0;
-		foreach(c; cols) result += this[c];
-		return to!T(result/length);
+		T[] values;
+		foreach(c; cols) values ~= this[c];
+		return to!T(Cell.avg!T(values));
 	}
-	
+
+	/+ +/
 	void max(size_t target, size_t[] cols) { if (cols) this[target] = max(cols); }
 	T max(size_t[] cols) {
 		if (cols.length == 0) return 0;

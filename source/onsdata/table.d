@@ -77,7 +77,11 @@ class Table(T) {
 		foreach(i, row; rows) if (row) return i;
 		return size_t.max;
 	}
-	
+	size_t lastIndex() {
+		foreach_reverse(i, row; rows) if (row) return i;
+		return 0;
+	}
+
 	void opIndexAssign(Row!T row, size_t i) {
 		if (i < height) rows[i] = row;
 	}
@@ -89,8 +93,8 @@ class Table(T) {
 		return colIndex[col];
 	}
 	
-	void min(T)(size_t target, size_t[] cols) { foreach(row; rows) if (row) row.min(target, cols); }
-	T min(T)(size_t col, size_t start, size_t end) {
+	void min(size_t target, size_t[] cols) { foreach(row; rows) if (row) row.min(target, cols); }
+	T min(size_t col, size_t start, size_t end) {
 		bool first = false;
 		T result = 0;
 		foreach(row; rows) {
@@ -119,10 +123,10 @@ class Table(T) {
 		return 0;
 	}
 	
-	void max(T)(size_t target, size_t[] cols, size_t start = 0, size_t end = 0) { 
+	void max(size_t target, size_t[] cols, size_t start = 0, size_t end = 0) { 
 		auto e = (end == 0 ? height : end);
 		foreach(i; start..end) if (auto row = this[i]) row.max(target, cols); }
-	T max(T)(size_t col, size_t start = 0, size_t end = 0) {
+	T max(size_t col, size_t start = 0, size_t end = 0) {
 		auto e = (end == 0 ? height : end);
 		bool first = false;
 		T result = 0;
@@ -191,7 +195,7 @@ class Table(T) {
 		return 0;
 	}
 	
-	// -- getDec
+	// -- dec
 	S dec(S = double)(size_t col, size_t start = 0, size_t end = 0) {
 		auto e = (end == 0 ? height : end);
 		int counter = 0; int x = 0; bool foundFirst = false;
@@ -209,6 +213,23 @@ class Table(T) {
 		return 0;
 	}
 	
+	// -- div
+	S div(S = double)(size_t col, size_t start = 0, size_t end = 0) {
+		auto e = (end == 0 ? height : end);
+		T[] values; 
+		foreach(i; start..e) if (auto row = this[i]) {
+			if (auto row2 = this[i-1]) {
+				values ~= row2[col] - row[col];
+			}
+		}
+		if (values) {
+			S result = 0;
+			foreach(value; values) result += value;
+			return result/values.length;
+		}
+		return 0;
+	}
+
 	Table!T copy() { return new Table!T(this); }
 	override string toString() {
 		string result;
@@ -250,90 +271,4 @@ class Table(T) {
 		return result;
 	}
 	
-}
-
-// -- getInc
-double getInc(T)(T[][] table, size_t col){
-	int counter = 0; int x = 0; bool foundFirst = false;
-	foreach(i, row; table) if (row) {
-		if (i == 0) continue;
-		
-		if ((foundFirst) && (table[i-1])) {
-			double delta = row[col] - table[i-1][col];
-			if (delta > 0) x++;
-			counter++;
-		}
-		else foundFirst = true;
-	}
-	if (counter) return x/counter;
-	return 0;
-}
-
-// AVG
-S avg(S = double, T)(T[][] table, size_t col, size_t start = 0, size_t end = size_t.max) {
-	return (end == size_t.max) ? avg(table[start..table.length], col) : avg(table[start..end], col) ;
-}
-S avg(S = double, T)(T[][] table, size_t col) {
-	int counter = 0; double sum = 0;
-	foreach(row; table) if (row) { counter++; sum += row[col]; }
-	return (counter) ? sum/counter : 0;
-}
-// AVG
-bool Avg(T)(T[][] table, size_t target, size_t[] cols, size_t start = 0, size_t end = size_t.max) { 
-	return (end == size_t.max) ? setAvg(table[start..table.length], target, cols) : setAvg(table[start..end], target, cols);
-}
-bool Avg(T)(T[][] table, size_t target, size_t[] cols) { 
-	if (table.length == 0) return false;
-	if (cols.length == 0) return false;
-	
-	auto rlen = table[0].length-1; // max Value
-	if (target > rlen) return false;
-	foreach(col; cols) if (col > rlen) return false;
-	
-	double colSum = row[cols[0]];
-	foreach(row; table) if (row) {
-		if (cols.length > 1) foreach(col; cols[1..$]) colSum += row[col];
-		row[target] = check!T(colSum/cols.length);
-	}
-	return true;
-}
-
-size_t count(T)(T[][] table, size_t left, Ops op, T right) if (isBasicType!T)
-in {
-	assert(((op == op.GC) || (op == op.LC)) && (right >= 0));
-}
-body {	
-	import std.conv;
-	size_t result = 0;  size_t rCol;
-	if ((op == op.GC) || (op == op.LC)) rCol = to!size_t(right);
-	
-	foreach(row; table) if (row) {
-		final switch(op) {
-			case Ops.GC: if (row[left] > row[rCol]) result++; break;
-			case Ops.LC: if (row[left] < row[rCol]) result++; break;
-			case Ops.GV: if (row[left] > right) result++; break;
-			case Ops.LV: if (row[left] < right) result++; break;
-		}
-	}
-	return result;
-}
-
-T[][] find(T, S)(T[][] table, size_t left, Ops op, S right) if (isBasicType!T)
-in {
-	assert(((op == op.GC) || (op == op.LC)) && (right >= 0));
-}
-body {	
-	import std.conv;
-	T[][] result;  size_t rCol;
-	if ((op == op.GC) || (op == op.LC)) rCol = to!size_t(right);
-	
-	foreach(row; table) if (row) {
-		final switch(op) {
-			case Ops.GC: if (row[left] > row[rCol]) result ~= row; break;
-			case Ops.LC: if (row[left] < row[rCol]) result ~= row; break;
-			case Ops.GV: if (row[left] > right) result ~= row; break;
-			case Ops.LV: if (row[left] < right) result ~= row; break;
-		}
-	}
-	return result;
 }
